@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>自動販売機 — Máquina Expendedora</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --neon-red:    #ff0040;
+  --neon-blue:   #00b8d9;
+  --neon-yellow: #f0c000;
+  --neon-green:  #00c96e;
+  --neon-pink:   #ff00aa;
+  --px: 'Press Start 2P', monospace;
+  --acure-white:   #f4f8f8;
+  --acure-off:     #e0eded;
+  --acure-teal:    #3aaba0;
+  --acure-teal-dk: #1e7a72;
+  --acure-teal-lt: #a8ddd8;
+  --acure-stripe:  #2a7a72;
+  --acure-dark:    #0d2535;
+  --acure-panel:   #0a1e2d;
+  --glass-teal:    rgba(58,171,160,0.08);
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(58,171,160,0.06) 39px, rgba(58,171,160,0.06) 40px),
+    repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(58,171,160,0.06) 39px, rgba(58,171,160,0.06) 40px),
+    linear-gradient(160deg, #1a2f3a 0%, #0d2535 60%, #0a1e2d 100%);
+  font-family: var(--px);
+  padding: 10px 20px 40px;
+}
+
+.cat-scene {
+  width: 980px;
+  height: 160px;
+  position: relative;
+  margin-bottom: -4px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.cat-wrapper {
+  position: relative;
+  width: 320px;
+  height: 155px;
+  cursor: pointer;
+  user-select: none;
+  filter: drop-shadow(0 -8px 24px rgba(0,0,0,0.5));
+  transition: transform 0.3s ease;
+}
+.cat-wrapper:hover .cat-svg { filter: drop-shadow(0 0 12px rgba(58,171,160,0.4)); }
+.cat-wrapper:active { transform: scale(0.97); }
+
+.machine {
+  width: 980px;
+  background: linear-gradient(180deg,
+    #daeaea 0%,
+    #eaf4f4 8%,
+    #f0f8f8 20%,
+    #eaf4f4 55%,
+    #d8ecec 80%,
+    #c8e0e0 100%);
+  border-radius: 14px 14px 10px 10px;
+  border: 3px solid #5ab0a8;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px #8cccc8,
+    0 0 0 4px rgba(58,171,160,0.15),
+    0 40px 100px rgba(0,0,0,0.7),
+    inset 0 2px 0 rgba(255,255,255,0.9),
+    inset 0 -3px 0 rgba(0,0,0,0.1),
+    inset 3px 0 12px rgba(255,255,255,0.3),
+    inset -3px 0 12px rgba(255,255,255,0.3);
+  position: relative;
+}
+
+.side-stripe-l, .side-stripe-r {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 24px;
+  z-index: 5;
+  pointer-events: none;
+}
+.side-stripe-l {
+  left: 0;
+  background: linear-gradient(180deg,
+    #1e7070 0%, #2a9090 25%, #3aaba0 50%, #2a9090 75%, #1e7070 100%);
+  box-shadow: inset -3px 0 8px rgba(0,0,0,0.25), 2px 0 6px rgba(0,0,0,0.1);
+}
+.side-stripe-r {
+  right: 0;
+  background: linear-gradient(180deg,
+    #1e7070 0%, #2a9090 25%, #3aaba0 50%, #2a9090 75%, #1e7070 100%);
+  box-shadow: inset 3px 0 8px rgba(0,0,0,0.25), -2px 0 6px rgba(0,0,0,0.1);
+}
+.side-stripe-l::before, .side-stripe-r::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 2px;
+  background: rgba(255,255,255,0.2);
+}
+.side-stripe-l::before { right: 6px; }
+.side-stripe-r::before { left: 6px; }
+
+.mhdr {
+  background: linear-gradient(180deg, #1a3a4a 0%, #0d2535 60%, #0a1e2d 100%);
+  border-bottom: 3px solid var(--acure-teal);
+  padding: 10px 34px 8px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.mhdr::before {
+  content:'';
+  position:absolute;
+  inset:0;
+  background: repeating-linear-gradient(90deg,transparent,transparent 30px,rgba(58,171,160,0.04) 30px,rgba(58,171,160,0.04) 31px);
+  pointer-events:none;
+}
+.mhdr-logo {
+  font-size: 13px;
+  letter-spacing: 4px;
+  color: var(--neon-yellow);
+  text-shadow: 0 0 12px rgba(240,192,0,0.6), 0 0 30px rgba(240,192,0,0.3);
+  display: block;
+  margin-bottom: 5px;
+  position: relative;
+}
+.mhdr-sub {
+  font-size: 6px;
+  color: var(--acure-teal-lt);
+  letter-spacing: 3px;
+  text-shadow: 0 0 8px rgba(168,221,216,0.5);
+  display: block;
+  position: relative;
+}
+
+.display-window {
+  background: linear-gradient(180deg, #0a1520 0%, #0d1e2d 100%);
+  border-bottom: 3px solid var(--acure-teal);
+  padding: 10px 30px;
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+}
+.disp-screen {
+  background: #001812;
+  border: 2px solid var(--neon-green);
+  border-radius: 7px;
+  padding: 10px 16px;
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0,201,110,0.15), inset 0 0 30px rgba(0,0,0,0.5);
+}
+.disp-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,180,80,0.04) 2px, rgba(0,180,80,0.04) 4px);
+  pointer-events: none;
+}
+.disp-row { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.disp-lbl { font-size: 6px; color: rgba(0,255,136,0.35); white-space: nowrap; }
+.disp-code { font-size: 20px; color: var(--neon-green); text-shadow: 0 0 14px var(--neon-green); letter-spacing: 8px; min-width: 68px; }
+.disp-name { font-size: 9px; color: var(--neon-green); text-shadow: 0 0 8px var(--neon-green); min-width: 100px; }
+.disp-prc  { font-size: 18px; color: var(--neon-yellow); text-shadow: 0 0 14px var(--neon-yellow), 0 0 30px rgba(240,192,0,0.4); font-weight: bold; letter-spacing: 2px; }
+.disp-msg  { font-size: 7px; color: var(--neon-red); text-shadow: 0 0 8px var(--neon-red); animation: blink .7s step-end infinite; margin-top: 4px; display: block; }
+@keyframes blink { 50% { opacity: 0; } }
+
+.coin-info-box {
+  background: #001812;
+  border: 2px solid var(--neon-yellow);
+  border-radius: 7px;
+  padding: 10px 14px;
+  text-align: center;
+  box-shadow: 0 0 16px rgba(240,192,0,0.12);
+  min-width: 130px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+.coin-info-lbl { font-size: 5px; color: rgba(240,192,0,0.4); display: block; letter-spacing: 1px; }
+.coin-info-amt { font-size: 18px; color: var(--neon-yellow); text-shadow: 0 0 12px var(--neon-yellow); display: block; }
+.coin-info-change { font-size: 6px; color: rgba(0,255,136,0.7); display: block; min-height: 10px; }
+
+.rainbow-bar {
+  height: 4px;
+  background: linear-gradient(90deg, var(--acure-teal), #7ad8d0, #3aaba0, #a8ddd8, var(--acure-teal));
+  background-size: 200% 100%;
+  animation: rainbowShift 5s linear infinite;
+}
+@keyframes rainbowShift { to { background-position: 200% 0; } }
+
+.marquee-wrap {
+  background: #001a20;
+  border-bottom: 1px solid rgba(58,171,160,0.3);
+  padding: 5px 0;
+  overflow: hidden;
+}
+.marquee-inner {
+  white-space: nowrap;
+  display: inline-block;
+  animation: marquee 30s linear infinite;
+  font-size: 6px;
+  color: var(--acure-teal-lt);
+  letter-spacing: 2px;
+  text-shadow: 0 0 6px rgba(168,221,216,0.4);
+}
+@keyframes marquee { from { transform: translateX(1050px); } to { transform: translateX(-100%); } }
+
+.mbody {
+  display: flex;
+  gap: 0;
+}
+
+.products-panel {
+  flex: 1;
+  background: linear-gradient(180deg, rgba(240,248,248,0.04) 0%, rgba(220,240,240,0.02) 100%);
+  padding: 12px 14px 14px;
+  position: relative;
+  border-right: 2px solid rgba(58,171,160,0.2);
+}
+.products-panel::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  background: rgba(240,248,248,0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.06);
+  pointer-events: none;
+}
+
+.row-header-strip {
+  display: grid;
+  grid-template-columns: 30px repeat(5, 1fr);
+  gap: 5px;
+  margin-bottom: 4px;
+}
+.col-hdr-spacer { width: 30px; }
+.col-hdr {
+  text-align: center;
+  font-size: 7px;
+  color: var(--neon-yellow);
+  text-shadow: 0 0 8px rgba(240,192,0,0.4);
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(240,192,0,0.25);
+}
+
+.grid-wrap {
+  display: grid;
+  grid-template-columns: 30px repeat(5, 1fr);
+  gap: 5px;
+}
+
+.row-lbl {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: var(--neon-yellow);
+  text-shadow: 0 0 8px rgba(240,192,0,0.5);
+}
+
+.slot {
+  background: rgba(240,252,252,0.07);
+  border: 1.5px solid rgba(58,171,160,0.3);
+  border-radius: 8px;
+  padding: 6px 4px 5px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.15s ease;
+  cursor: default;
+  backdrop-filter: blur(2px);
+}
+.slot:hover:not(.oos):not(.empty) {
+  border-color: rgba(58,171,160,0.6);
+  background: rgba(240,252,252,0.12);
+}
+.slot.selected {
+  border-color: var(--neon-yellow) !important;
+  box-shadow: 0 0 18px rgba(240,192,0,0.5), inset 0 0 12px rgba(240,192,0,0.06) !important;
+  background: rgba(240,192,0,0.08) !important;
+}
+.slot.oos { border-color: rgba(255,0,64,0.3) !important; opacity: 0.7; }
+.slot.empty { opacity: 0.15; }
+
+.stamp {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  background: rgba(0,0,0,0.5);
+  border-radius: 7px;
+}
+.stamp-inner {
+  font-size: 5px;
+  color: var(--neon-red);
+  text-shadow: 0 0 6px var(--neon-red);
+  border: 1.5px solid var(--neon-red);
+  padding: 3px 5px;
+  transform: rotate(-20deg);
+  letter-spacing: 1px;
+}
+
+.slot-code  { font-size: 5px; color: rgba(168,221,216,0.3); display: block; margin-bottom: 2px; }
+.slot-name  { font-size: 4.5px; color: #d0ecee; display: block; margin: 2px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.slot-price {
+  font-size: 9px;
+  color: var(--neon-green);
+  text-shadow: 0 0 8px var(--neon-green);
+  display: block;
+  margin-top: 2px;
+  letter-spacing: 1px;
+}
+.stock-row  { display: flex; justify-content: center; gap: 2px; margin-top: 3px; }
+.sdot { width: 4px; height: 4px; border-radius: 50%; background: var(--neon-green); box-shadow: 0 0 4px var(--neon-green); }
+.sdot.empty-dot { background: rgba(255,0,64,0.3); box-shadow: none; }
+
+@keyframes floatUp    { 0%,100%{transform:translateY(0)}   50%{transform:translateY(-3px)} }
+@keyframes floatWiggle{ 0%,100%{transform:rotate(0deg)}    50%{transform:rotate(4deg)} }
+@keyframes floatBounce{ 0%,100%{transform:scaleY(1)}       50%{transform:scaleY(1.08)} }
+@keyframes floatPulse { 0%,100%{transform:scale(1)}        50%{transform:scale(1.06)} }
+@keyframes floatShake { 0%,100%{transform:translateX(0)}   25%{transform:translateX(-2px)} 75%{transform:translateX(2px)} }
+.art-float  { animation: floatUp     3.2s ease-in-out infinite; }
+.art-wiggle { animation: floatWiggle 2.8s ease-in-out infinite; }
+.art-bounce { animation: floatBounce 2.5s ease-in-out infinite; }
+.art-pulse  { animation: floatPulse  2s ease-in-out infinite; }
+.art-shake  { animation: floatShake  3.5s ease-in-out infinite; }
+
+@keyframes dispenseFlash {
+  0%   { background: rgba(0,201,110,.3); border-color: var(--neon-green); }
+  50%  { background: rgba(0,201,110,.08); border-color: rgba(0,201,110,.4); }
+  100% { background: rgba(240,252,252,.07); border-color: rgba(58,171,160,.3); }
+}
+.dispensing { animation: dispenseFlash 1.2s ease-out; }
+
+.right-panel {
+  width: 210px;
+  background: linear-gradient(180deg, #c8e4e2 0%, #d8ecea 30%, #cce4e2 70%, #b8d8d4 100%);
+  border-left: 3px solid #5ab0a8;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 10px;
+  gap: 9px;
+  box-shadow: inset 2px 0 8px rgba(255,255,255,0.4);
+}
+
+.kpad-sec {
+  background: linear-gradient(180deg, #1a3040 0%, #0d2030 100%);
+  border: 2px solid #3a7a72;
+  border-radius: 10px;
+  padding: 9px 9px;
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.2);
+}
+.kpad-lbl {
+  font-size: 5px;
+  color: rgba(168,221,216,0.5);
+  display: block;
+  text-align: center;
+  margin-bottom: 6px;
+  letter-spacing: 2px;
+}
+.kpad-row {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.kbtn {
+  width: 32px;
+  height: 32px;
+  background: #0d2030;
+  border-radius: 6px;
+  font-family: var(--px);
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s;
+  border: 2px solid;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.kbtn-L { color: var(--neon-blue); border-color: rgba(0,184,217,0.35); text-shadow: 0 0 8px var(--neon-blue); }
+.kbtn-N { color: var(--neon-yellow); border-color: rgba(240,192,0,0.35); text-shadow: 0 0 8px var(--neon-yellow); }
+.kbtn:hover { transform: scale(1.1); box-shadow: 0 4px 8px rgba(0,0,0,0.4); }
+.kbtn:active { transform: scale(0.91); box-shadow: none; }
+.kbtn.sel-L { background: rgba(0,184,217,0.18); border-color: var(--neon-blue); box-shadow: 0 0 14px rgba(0,184,217,0.5); }
+.kbtn.sel-N { background: rgba(240,192,0,0.18); border-color: var(--neon-yellow); box-shadow: 0 0 14px rgba(240,192,0,0.5); }
+.kbtn.oos-btn {
+  color: var(--neon-red) !important;
+  border-color: rgba(255,0,64,0.5) !important;
+  animation: oosFlicker 1.2s step-end infinite;
+}
+@keyframes oosFlicker { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+.clear-btn {
+  width: 100%;
+  height: 28px;
+  margin-top: 7px;
+  background: rgba(255,0,64,0.08);
+  border: 2px solid rgba(255,0,64,0.4);
+  border-radius: 6px;
+  color: var(--neon-red);
+  font-family: var(--px);
+  font-size: 5.5px;
+  cursor: pointer;
+  text-shadow: 0 0 6px var(--neon-red);
+  letter-spacing: 1px;
+  transition: all 0.15s;
+}
+.clear-btn:hover { background: rgba(255,0,64,0.18); box-shadow: 0 0 12px rgba(255,0,64,0.35); }
+
+.coin-sec {
+  background: linear-gradient(180deg, #1a3040 0%, #0d2030 100%);
+  border: 2px solid #3a7a72;
+  border-radius: 10px;
+  padding: 9px 9px;
+  text-align: center;
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.2);
+}
+.coin-slot-visual {
+  width: 54px;
+  height: 7px;
+  background: #000;
+  border: 2px solid rgba(168,221,216,0.15);
+  border-radius: 3px;
+  margin: 4px auto 7px;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.9);
+}
+.coin-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+.cbtn {
+  padding: 4px 6px;
+  background: rgba(240,192,0,0.08);
+  border: 1.5px solid rgba(240,192,0,0.35);
+  border-radius: 5px;
+  color: var(--neon-yellow);
+  font-family: var(--px);
+  font-size: 6px;
+  cursor: pointer;
+  transition: all 0.12s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.cbtn:hover {
+  background: rgba(240,192,0,0.2);
+  box-shadow: 0 0 10px rgba(240,192,0,0.35), 0 2px 6px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
+}
+.cbtn:active { transform: translateY(0); }
+
+.devolver-btn {
+  width: 100%;
+  height: 30px;
+  margin-bottom: 6px;
+  background: rgba(0,184,217,0.07);
+  border: 2px solid rgba(0,184,217,0.4);
+  border-radius: 7px;
+  color: var(--neon-blue);
+  font-family: var(--px);
+  font-size: 5px;
+  cursor: pointer;
+  text-shadow: 0 0 6px var(--neon-blue);
+  letter-spacing: 1px;
+  transition: all 0.15s;
+}
+.devolver-btn:hover { background: rgba(0,184,217,0.16); box-shadow: 0 0 14px rgba(0,184,217,0.35); }
+
+.buy-btn {
+  width: 100%;
+  height: 44px;
+  background: linear-gradient(135deg, rgba(0,201,110,0.14), rgba(0,140,70,0.07));
+  border: 2px solid var(--neon-green);
+  border-radius: 8px;
+  color: var(--neon-green);
+  font-family: var(--px);
+  font-size: 7px;
+  cursor: pointer;
+  text-shadow: 0 0 10px var(--neon-green);
+  letter-spacing: 1px;
+  box-shadow: 0 0 20px rgba(0,201,110,0.18), inset 0 1px 0 rgba(255,255,255,0.04);
+  transition: all 0.2s;
+}
+.buy-btn:hover {
+  background: linear-gradient(135deg, rgba(0,201,110,0.26), rgba(0,140,70,0.16));
+  box-shadow: 0 0 30px rgba(0,201,110,0.45), 0 4px 12px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
+}
+.buy-btn:active { transform: translateY(0); }
+
+.change-tray {
+  background: #040d18;
+  border: 2px solid var(--neon-blue);
+  border-radius: 7px;
+  padding: 6px 8px;
+  text-align: center;
+  font-size: 6px;
+  color: var(--neon-blue);
+  text-shadow: 0 0 8px var(--neon-blue);
+  display: none;
+  box-shadow: 0 0 14px rgba(0,184,217,0.2);
+}
+.change-tray.visible { display: block; animation: dropItem 0.5s ease-out; }
+
+.tray {
+  background: #030c14;
+  border: 2px solid rgba(58,171,160,0.35);
+  border-radius: 8px;
+  min-height: 55px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 0 15px rgba(0,0,0,0.7);
+  flex: 1;
+}
+.tray-lbl { font-size: 5px; color: rgba(80,130,130,0.3); letter-spacing: 1px; text-align: center; }
+.tray-item {
+  font-size: 6px;
+  color: var(--neon-green);
+  text-shadow: 0 0 10px var(--neon-green);
+  text-align: center;
+  animation: dropItem .5s ease-out;
+  line-height: 1.8;
+}
+@keyframes dropItem { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+.acure-strip {
+  background: linear-gradient(90deg, #1e6a64, #3aaba0, #4abab4, #3aaba0, #1e6a64);
+  border-top: 3px solid #2a8a82;
+  padding: 7px 0;
+  text-align: center;
+  position: relative;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.15);
+}
+.acure-strip::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+.acure-logo {
+  font-size: 16px;
+  letter-spacing: 10px;
+  color: #ffffff;
+  font-style: italic;
+  font-family: Georgia, 'Times New Roman', serif;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.3), 0 0 20px rgba(255,255,255,0.2);
+  position: relative;
+}
+.acure-jr {
+  font-size: 7px;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: 4px;
+  font-family: sans-serif;
+  display: block;
+  margin-top: 2px;
+  position: relative;
+}
+
+.modal-bg {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.88);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+}
+.modal-bg.on { display: flex; }
+.modal-box {
+  background: linear-gradient(135deg, #0d1e2d, #0a2535);
+  border: 3px solid var(--neon-green);
+  border-radius: 14px;
+  padding: 30px 40px;
+  text-align: center;
+  box-shadow: 0 0 60px rgba(0,201,110,0.5), 0 0 120px rgba(0,201,110,0.2);
+  animation: modalPop .35s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes modalPop { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.modal-ico  { font-size: 48px; display: block; margin-bottom: 14px; }
+.modal-ttl  { font-size: 11px; color: var(--neon-green); text-shadow: 0 0 14px var(--neon-green); display: block; margin-bottom: 8px; }
+.modal-prod { font-size: 9px; color: var(--neon-yellow); text-shadow: 0 0 10px var(--neon-yellow); display: block; margin-bottom: 5px; }
+.modal-change { font-size: 9px; color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); display: block; margin-bottom: 16px; }
+.modal-cls {
+  background: rgba(0,201,110,0.1);
+  border: 2px solid var(--neon-green);
+  border-radius: 7px;
+  color: var(--neon-green);
+  font-family: var(--px);
+  font-size: 7px;
+  padding: 9px 20px;
+  cursor: pointer;
+  text-shadow: 0 0 8px var(--neon-green);
+  transition: all 0.2s;
+}
+.modal-cls:hover { background: rgba(0,201,110,0.22); box-shadow: 0 0 20px rgba(0,201,110,0.5); }
+</style>
+</head>
+<body>
+
+<!-- CAT SCENE -->
+<div class="cat-scene">
+  <div class="cat-wrapper" id="catWrapper" title="¡Haz clic al gato! 🐱">
+    <svg id="cat-svg" class="cat-svg" viewBox="0 0 320 155" xmlns="http://www.w3.org/2000/svg" width="320" height="155">
+      <ellipse cx="160" cy="148" rx="145" ry="14" fill="#c8a000" opacity="0.7"/>
+      <rect x="20" y="130" width="280" height="25" rx="8" fill="#e8c000"/>
+      <rect x="20" y="130" width="280" height="6" rx="3" fill="#f0d040"/>
+      <g fill="#d4a800">
+        <rect x="22" y="150" width="4" height="8" rx="1"/><rect x="32" y="150" width="4" height="8" rx="1"/>
+        <rect x="42" y="150" width="4" height="8" rx="1"/><rect x="52" y="150" width="4" height="8" rx="1"/>
+        <rect x="62" y="150" width="4" height="8" rx="1"/><rect x="72" y="150" width="4" height="8" rx="1"/>
+        <rect x="82" y="150" width="4" height="8" rx="1"/><rect x="92" y="150" width="4" height="8" rx="1"/>
+        <rect x="102" y="150" width="4" height="8" rx="1"/><rect x="112" y="150" width="4" height="8" rx="1"/>
+        <rect x="122" y="150" width="4" height="8" rx="1"/><rect x="132" y="150" width="4" height="8" rx="1"/>
+        <rect x="142" y="150" width="4" height="8" rx="1"/><rect x="152" y="150" width="4" height="8" rx="1"/>
+        <rect x="162" y="150" width="4" height="8" rx="1"/><rect x="172" y="150" width="4" height="8" rx="1"/>
+        <rect x="182" y="150" width="4" height="8" rx="1"/><rect x="192" y="150" width="4" height="8" rx="1"/>
+        <rect x="202" y="150" width="4" height="8" rx="1"/><rect x="212" y="150" width="4" height="8" rx="1"/>
+        <rect x="222" y="150" width="4" height="8" rx="1"/><rect x="232" y="150" width="4" height="8" rx="1"/>
+        <rect x="242" y="150" width="4" height="8" rx="1"/><rect x="252" y="150" width="4" height="8" rx="1"/>
+        <rect x="262" y="150" width="4" height="8" rx="1"/><rect x="272" y="150" width="4" height="8" rx="1"/>
+        <rect x="282" y="150" width="4" height="8" rx="1"/><rect x="292" y="150" width="4" height="8" rx="1"/>
+      </g>
+      <rect x="260" y="55" width="22" height="70" rx="4" fill="#3a1a00"/>
+      <rect x="265" y="45" width="12" height="18" rx="3" fill="#4a2a00"/>
+      <rect x="267" y="38" width="8" height="12" rx="2" fill="#5a3a10"/>
+      <rect x="269" y="34" width="4" height="8" rx="1" fill="#6a4a20"/>
+      <rect x="262" y="75" width="18" height="28" rx="2" fill="#8B1a1a"/>
+      <rect x="264" y="77" width="14" height="6" rx="1" fill="#ff4040" opacity="0.6"/>
+      <rect x="264" y="85" width="14" height="2" fill="#ff8080" opacity="0.3"/>
+      <rect x="264" y="89" width="14" height="2" fill="#ff8080" opacity="0.3"/>
+      <rect x="265" y="38" width="12" height="8" rx="2" fill="#cc2020"/>
+      <ellipse cx="220" cy="135" rx="16" ry="5" fill="#4a3020"/>
+      <rect x="217" y="100" width="6" height="36" rx="2" fill="#5a4030"/>
+      <path d="M200,72 Q200,108 220,110 Q240,108 240,72 Z" fill="rgba(180,50,50,0.85)"/>
+      <path d="M200,72 L240,72" stroke="#ffffff" stroke-width="1.5" fill="none" opacity="0.3"/>
+      <path d="M205,80 Q206,95 210,102" stroke="rgba(255,255,255,0.25)" stroke-width="2" fill="none"/>
+      <ellipse cx="220" cy="73" rx="18" ry="3" fill="rgba(200,80,80,0.5)"/>
+      <polygon points="60,125 120,125 115,95 65,95" fill="#f0c040"/>
+      <polygon points="60,125 65,95 55,98 50,128" fill="#d4a030"/>
+      <polygon points="60,125 120,125 128,122 68,122" fill="#e8b838" opacity="0.7"/>
+      <ellipse cx="80" cy="110" rx="7" ry="5" fill="#c8900a" opacity="0.6"/>
+      <ellipse cx="100" cy="105" rx="5" ry="4" fill="#c8900a" opacity="0.6"/>
+      <ellipse cx="90" cy="118" rx="4" ry="3" fill="#c8900a" opacity="0.6"/>
+      <ellipse cx="78" cy="99" rx="12" ry="4" fill="rgba(255,240,100,0.25)"/>
+      <path d="M165,130 Q140,100 150,70 Q160,50 145,35" stroke="#111" stroke-width="12" fill="none" stroke-linecap="round"/>
+      <path d="M165,130 Q140,100 150,70 Q160,50 145,35" stroke="#1a1a1a" stroke-width="8" fill="none" stroke-linecap="round"/>
+      <circle cx="143" cy="33" r="9" fill="#111"/>
+      <ellipse cx="160" cy="115" rx="45" ry="30" fill="#111"/>
+      <ellipse cx="160" cy="112" rx="42" ry="27" fill="#1a1a1a"/>
+      <path d="M130,100 Q145,95 150,105" stroke="#222" stroke-width="1.5" fill="none"/>
+      <path d="M170,96 Q182,98 185,108" stroke="#222" stroke-width="1.5" fill="none"/>
+      <ellipse cx="140" cy="137" rx="14" ry="8" fill="#111"/>
+      <ellipse cx="180" cy="137" rx="14" ry="8" fill="#111"/>
+      <ellipse cx="133" cy="140" rx="4" ry="3" fill="#1a1a1a"/>
+      <ellipse cx="140" cy="141" rx="4" ry="3" fill="#1a1a1a"/>
+      <ellipse cx="147" cy="140" rx="4" ry="3" fill="#1a1a1a"/>
+      <ellipse cx="173" cy="140" rx="4" ry="3" fill="#1a1a1a"/>
+      <ellipse cx="180" cy="141" rx="4" ry="3" fill="#1a1a1a"/>
+      <ellipse cx="187" cy="140" rx="4" ry="3" fill="#1a1a1a"/>
+      <ellipse cx="160" cy="90" rx="26" ry="18" fill="#111"/>
+      <ellipse cx="160" cy="68" rx="38" ry="32" fill="#111"/>
+      <ellipse cx="160" cy="66" rx="35" ry="29" fill="#1a1a1a"/>
+      <polygon points="130,48 120,18 148,42" fill="#111"/>
+      <polygon points="190,48 200,18 172,42" fill="#111"/>
+      <polygon points="130,46 124,25 145,42" fill="#2a0a0a" opacity="0.6"/>
+      <polygon points="190,46 196,25 175,42" fill="#2a0a0a" opacity="0.6"/>
+      <ellipse cx="147" cy="62" rx="10" ry="5" fill="#0a2a0a"/>
+      <ellipse cx="173" cy="62" rx="10" ry="5" fill="#0a2a0a"/>
+      <ellipse cx="147" cy="62" rx="7" ry="4" fill="#2a8a20"/>
+      <ellipse cx="173" cy="62" rx="7" ry="4" fill="#2a8a20"/>
+      <ellipse cx="147" cy="62" rx="2" ry="4" fill="#050505"/>
+      <ellipse cx="173" cy="62" rx="2" ry="4" fill="#050505"/>
+      <circle cx="144" cy="60" r="1.5" fill="rgba(255,255,255,0.7)"/>
+      <circle cx="170" cy="60" r="1.5" fill="rgba(255,255,255,0.7)"/>
+      <path d="M137,60 Q147,56 157,60" stroke="#111" stroke-width="3" fill="none"/>
+      <path d="M163,60 Q173,56 183,60" stroke="#111" stroke-width="3" fill="none"/>
+      <polygon points="160,72 156,76 164,76" fill="#3a1a2a"/>
+      <path d="M156,76 Q160,81 164,76" stroke="#2a0a1a" stroke-width="1.5" fill="none"/>
+      <path d="M156,76 Q152,80 148,78" stroke="#2a0a1a" stroke-width="1.5" fill="none"/>
+      <path d="M164,76 Q168,80 172,78" stroke="#2a0a1a" stroke-width="1.5" fill="none"/>
+      <line x1="122" y1="73" x2="155" y2="75" stroke="rgba(255,255,255,0.7)" stroke-width="1"/>
+      <line x1="120" y1="78" x2="154" y2="77" stroke="rgba(255,255,255,0.6)" stroke-width="1"/>
+      <line x1="124" y1="83" x2="155" y2="79" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+      <line x1="198" y1="73" x2="165" y2="75" stroke="rgba(255,255,255,0.7)" stroke-width="1"/>
+      <line x1="200" y1="78" x2="166" y2="77" stroke="rgba(255,255,255,0.6)" stroke-width="1"/>
+      <line x1="196" y1="83" x2="165" y2="79" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+      <ellipse cx="205" cy="127" rx="10" ry="7" fill="#111" opacity="0.9"/>
+    </svg>
+  </div>
+</div>
+
+<!-- MACHINE -->
+<div class="machine">
+  <div class="side-stripe-l"></div>
+  <div class="side-stripe-r"></div>
+
+  <div class="mhdr">
+    <span class="mhdr-logo">🏪 自動販売機 — VENDING MACHINE 🎰</span>
+    <span class="mhdr-sub">◆ SELECCIONA TU SNACK FAVORITO ◆ お好きなスナックをどうぞ ◆</span>
+  </div>
+  <div class="rainbow-bar"></div>
+
+  <div class="display-window">
+    <div class="disp-screen">
+      <div class="disp-row">
+        <span class="disp-lbl">CÓD:</span>
+        <span class="disp-code" id="dCode">_ _</span>
+        <span class="disp-name" id="dName"></span>
+        <span class="disp-prc"  id="dPrc"></span>
+      </div>
+      <span class="disp-msg" id="dMsg"></span>
+    </div>
+    <div class="coin-info-box">
+      <span class="coin-info-lbl">MONEDAS INSERTADAS</span>
+      <span class="coin-info-amt" id="coinAmt">$0.00</span>
+      <span class="coin-info-change" id="coinChange"></span>
+    </div>
+  </div>
+
+  <div class="marquee-wrap">
+    <span class="marquee-inner">
+      ★ BIENVENIDO ★ WELCOME ★ いらっしゃいませ ★ &nbsp;&nbsp;
+      🥔 PAPAS &nbsp; 🥤 BEBIDAS &nbsp; 🍪 GALLETAS &nbsp; 🍬 DULCES &nbsp; 🍫 CHOCOLATES &nbsp;&nbsp;
+      ★ PRECIOS DESDE $12 MXN ★ ACEPTAMOS MONEDAS ★ SE DA CAMBIO ★ &nbsp;&nbsp;
+      ◆ TEMPERATURA: 4°C ◆ PRODUCTOS FRESCOS ◆ &nbsp;&nbsp;
+      ★ いつもありがとうございます ★ GRACIAS POR TU COMPRA ★
+    </span>
+  </div>
+
+  <div class="mbody">
+    <div class="products-panel" id="products-panel">
+      <div class="row-header-strip">
+        <div class="col-hdr-spacer"></div>
+        <div class="col-hdr">1</div>
+        <div class="col-hdr">2</div>
+        <div class="col-hdr">3</div>
+        <div class="col-hdr">4</div>
+        <div class="col-hdr">5</div>
+      </div>
+      <div class="grid-wrap" id="grid"></div>
+    </div>
+
+    <div class="right-panel">
+      <div class="kpad-sec">
+        <span class="kpad-lbl">── FILA / ROW ──</span>
+        <div class="kpad-row" id="kpadL"></div>
+        <span class="kpad-lbl" style="margin-top:6px;">── COLUMNA / COL ──</span>
+        <div class="kpad-row" id="kpadN"></div>
+        <button class="clear-btn" onclick="doClear()">⌫ BORRAR</button>
+      </div>
+
+      <div class="coin-sec">
+        <span class="kpad-lbl">── MONEDAS / COINS ──</span>
+        <div class="coin-slot-visual"></div>
+        <div class="coin-btns">
+          <button class="cbtn" onclick="coin(1)">$1</button>
+          <button class="cbtn" onclick="coin(2)">$2</button>
+          <button class="cbtn" onclick="coin(5)">$5</button>
+          <button class="cbtn" onclick="coin(10)">$10</button>
+          <button class="cbtn" onclick="coin(20)">$20</button>
+          <button class="cbtn" onclick="coin(50)">$50</button>
+        </div>
+        <button class="devolver-btn" onclick="devolverCambio()">↩ DEVOLVER MONEDAS</button>
+        <button class="buy-btn" onclick="doBuy()">▶ COMPRAR / BUY ◀</button>
+      </div>
+
+      <div class="change-tray" id="changeTray"></div>
+
+      <div class="tray" id="tray">
+        <span class="tray-lbl" id="trayContent">[ BANDEJA ]</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="acure-strip">
+    <span class="acure-logo">acure</span>
+    <span class="acure-jr">JR × CROSS</span>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-bg" id="modal">
+  <div class="modal-box">
+    <span class="modal-ico">🎉</span>
+    <span class="modal-ttl">¡PRODUCTO DISPENSADO!</span>
+    <span class="modal-prod" id="mProd"></span>
+    <span class="modal-change" id="mChange"></span>
+    <span style="font-size:6px;color:rgba(168,221,216,0.4);display:block;margin-bottom:16px;font-family:Georgia,serif;">ありがとうございました！またのご利用をお待ちしております</span>
+    <button class="modal-cls" onclick="closeModal()">[ ACEPTAR / OK ]</button>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   SISTEMA DE SONIDOS
+   Fuente: GitHub — Angel-Rez/Maquinaexpendedora12
+   Rama: main (raw.githubusercontent.com)
+══════════════════════════════════════════ */
+
+// ── Ruta base hacia los archivos de sonido en GitHub Raw ──
+const SOUND_BASE = 'https://raw.githubusercontent.com/Angel-Rez/Maquinaexpendedora12/main/';
+
+// ── Cache de objetos Audio para evitar re-creación repetida ──
+const audioCache = {};
+
+/**
+ * Reproduce un archivo de audio desde el repositorio de GitHub.
+ * Si el archivo falla (red, formato, política del navegador),
+ * cae al beep sintético como respaldo.
+ *
+ * @param {string} filename  - Nombre del archivo, ej: 'boton.mp3'
+ * @param {number} vol       - Volumen 0.0 – 1.0 (default 0.6)
+ * @param {boolean} loop     - Si debe repetirse en bucle (default false)
+ * @returns {HTMLAudioElement|null}
+ */
+function playSound(filename, vol = 0.6, loop = false) {
+  try {
+    // Reutiliza instancia cacheada para sonidos que no hacen loop
+    if (!loop) {
+      if (!audioCache[filename]) {
+        audioCache[filename] = new Audio(SOUND_BASE + filename);
+      }
+      const a = audioCache[filename];
+      a.volume  = vol;
+      a.loop    = false;
+      a.currentTime = 0;          // Reinicia para permitir solapamiento
+      const p = a.play();
+      if (p && p.catch) p.catch(() => syntheticFallback(filename));
+      return a;
+    } else {
+      // Para música en loop se crea una instancia dedicada
+      const a = new Audio(SOUND_BASE + filename);
+      a.volume = vol;
+      a.loop   = true;
+      const p  = a.play();
+      if (p && p.catch) p.catch(() => {});   // Silencia error en autoplay
+      return a;
+    }
+  } catch (e) {
+    syntheticFallback(filename);
+    return null;
+  }
+}
+
+/**
+ * Beep de emergencia generado por Web Audio API.
+ * Se activa sólo si el archivo de GitHub no cargó.
+ */
+let _audioCtx = null;
+function syntheticFallback(filename) {
+  const MAP = {
+    'boton.mp3':       { f: 880, t: 'square',   d: 0.08 },
+    'comprar.mp3':     { f: 523, t: 'triangle', d: 0.45 },
+    'dato.mp3':        { f: 300, t: 'sawtooth', d: 0.30 },
+    'musicafondo.mp3': { f:   0, t: 'sine',     d: 0    }, // sin fallback de música
+  };
+  const cfg = MAP[filename];
+  if (!cfg || cfg.f === 0) return;
+  try {
+    if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (_audioCtx.state === 'suspended') _audioCtx.resume();
+    const osc  = _audioCtx.createOscillator();
+    const gain = _audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(_audioCtx.destination);
+    osc.type = cfg.t;
+    osc.frequency.setValueAtTime(cfg.f, _audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.15, _audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, _audioCtx.currentTime + cfg.d);
+    osc.start(_audioCtx.currentTime);
+    osc.stop(_audioCtx.currentTime + cfg.d);
+  } catch (e) {}
+}
+
+// ── Funciones de sonido por acción ──────────────────────────
+// boton.mp3   → cualquier botón EXCEPTO comprar
+function sndBoton()  { playSound('boton.mp3',  0.65); }
+// comprar.mp3 → únicamente el botón COMPRAR
+function sndCompra() { playSound('comprar.mp3', 0.80); }
+// dato.mp3    → clic en la figura del gato
+function sndGato()   { playSound('dato.mp3',   0.70); }
+// Error sintético (no tiene archivo propio)
+function sndError()  { syntheticFallback('boton.mp3'); }
+
+// ── Música de fondo ──────────────────────────────────────────
+let bgMusic = null;
+function startBgMusic() {
+  if (bgMusic) return;                       // Ya iniciada
+  bgMusic = playSound('musicafondo.mp3', 0.35, true);
+}
+
+// Desbloquear AudioContext y arrancar música en el primer gesto
+document.addEventListener('click', () => {
+  if (_audioCtx && _audioCtx.state === 'suspended') _audioCtx.resume();
+  startBgMusic();
+}, { once: true });
+
+// ── Clic en el gato ──────────────────────────────────────────
+document.getElementById('catWrapper').addEventListener('click', () => {
+  sndGato();
+  const svg = document.getElementById('cat-svg');
+  svg.style.transition = 'transform 0.2s ease';
+  svg.style.transform  = 'scale(1.06) rotate(-4deg)';
+  setTimeout(() => { svg.style.transform = ''; }, 250);
+});
+
+/* ══════════════════════════════════════════
+   PRODUCT DATA
+══════════════════════════════════════════ */
+const PRODUCTS = [
+  { id:'A1', name:'Sabritas',    price:18, stock:8, type:'chip',   c1:'#FF6B00', c2:'#FFD700', c3:'#8B2500', anim:'art-float'  },
+  { id:'A2', name:'Rufles',      price:20, stock:8, type:'chip',   c1:'#CC0000', c2:'#FFFFFF', c3:'#660000', anim:'art-wiggle' },
+  { id:'A3', name:'Takis',       price:22, stock:8, type:'chip',   c1:'#5C0000', c2:'#FF2200', c3:'#1A0000', anim:'art-bounce' },
+  { id:'A4', name:'Cheetos',     price:18, stock:8, type:'chip',   c1:'#FF4500', c2:'#FFB300', c3:'#7A2000', anim:'art-pulse'  },
+  { id:'A5', name:'Rancheritos', price:15, stock:8, type:'chip',   c1:'#B00020', c2:'#FF9050', c3:'#550010', anim:'art-shake'  },
+  { id:'B1', name:'Coca-Cola',   price:25, stock:8, type:'can',    c1:'#CC0000', c2:'#FFFFFF', c3:'#660000', anim:'art-float'  },
+  { id:'B2', name:'Manzanita',   price:22, stock:8, type:'can',    c1:'#2E7D32', c2:'#F1F8E9', c3:'#1B5E20', anim:'art-bounce' },
+  { id:'B3', name:'Jarritos',    price:20, stock:8, type:'can',    c1:'#E65100', c2:'#FFF176', c3:'#BF360C', anim:'art-wiggle' },
+  { id:'B4', name:'Sprite',      price:25, stock:8, type:'can',    c1:'#1B5E20', c2:'#F9FF00', c3:'#003300', anim:'art-pulse'  },
+  { id:'B5', name:'Boing',       price:18, stock:8, type:'can',    c1:'#AD1457', c2:'#FCE4EC', c3:'#560027', anim:'art-shake'  },
+  { id:'C1', name:'Emperador',   price:15, stock:8, type:'cookie', c1:'#4E342E', c2:'#FFECB3', c3:'#3E2723', anim:'art-float'  },
+  { id:'C2', name:'Canelita',    price:12, stock:8, type:'cookie', c1:'#EF6C00', c2:'#FFF8E1', c3:'#BF360C', anim:'art-wiggle' },
+  { id:'C3', name:'Mantecadas',  price:20, stock:8, type:'cookie', c1:'#F9A825', c2:'#FFFDE7', c3:'#E65100', anim:'art-bounce' },
+  { id:'C4', name:'Barritas',    price:15, stock:8, type:'cookie', c1:'#C62828', c2:'#FFCDD2', c3:'#7F0000', anim:'art-pulse'  },
+  { id:'C5', name:'Príncipe',    price:18, stock:8, type:'cookie', c1:'#1565C0', c2:'#E3F2FD', c3:'#003c8f', anim:'art-shake'  },
+  { id:'D1', name:'M&Ms',        price:25, stock:8, type:'candy',  c1:'#B71C1C', c2:'#FFEB3B', c3:'#7F0000', anim:'art-float'  },
+  { id:'D2', name:'Panditas',    price:20, stock:8, type:'candy',  c1:'#AD1457', c2:'#FCE4EC', c3:'#560027', anim:'art-bounce' },
+  { id:'D3', name:'Pingüinos',   price:22, stock:8, type:'bar',    c1:'#212121', c2:'#F5F5F5', c3:'#000000', anim:'art-wiggle' },
+  { id:'D4', name:'Snickers',    price:28, stock:8, type:'bar',    c1:'#4E342E', c2:'#EFEBE9', c3:'#1a0000', anim:'art-pulse'  },
+  { id:'D5', name:'Skittles',    price:25, stock:8, type:'candy',  c1:'#6A1B9A', c2:'#F3E5F5', c3:'#38006b', anim:'art-shake'  },
+  { id:'E1', name:'Kinder',      price:22, stock:8, type:'bar',    c1:'#CC4400', c2:'#FFFDE7', c3:'#7a2000', anim:'art-float'  },
+  { id:'E2', name:'Carlos V',    price:15, stock:8, type:'bar',    c1:'#8B0000', c2:'#FFD700', c3:'#3a0000', anim:'art-wiggle' },
+  { id:'E3', name:'Kranky',      price:18, stock:8, type:'cookie', c1:'#5D4037', c2:'#FFCA28', c3:'#3E2723', anim:'art-bounce' },
+  { id:'E4', name:'Gansito',     price:20, stock:8, type:'bar',    c1:'#D81B60', c2:'#FFF176', c3:'#880e4f', anim:'art-pulse'  },
+  { id:'E5', name:'Twinkie',     price:25, stock:8, type:'cookie', c1:'#F9A825', c2:'#FFFDE7', c3:'#c67c00', anim:'art-shake'  },
+];
+
+/* ══════════════════════════════════════════
+   PIXEL ART ENGINE
+══════════════════════════════════════════ */
+function dk(hex, amt=50) {
+  let r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  r=Math.max(0,r-amt); g=Math.max(0,g-amt); b=Math.max(0,b-amt);
+  return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+function lt(hex, amt=60) {
+  let r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  r=Math.min(255,r+amt); g=Math.min(255,g+amt); b=Math.min(255,b+amt);
+  return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+function px(map, colors, sz=4) {
+  const rows = map.trim().split('\n');
+  const h = rows.length, w = Math.max(...rows.map(r=>r.length));
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w*sz} ${h*sz}" width="${w*sz}" height="${h*sz}" style="image-rendering:pixelated;display:block;margin:auto;">`;
+  rows.forEach((row,y) => {
+    for (let x=0;x<row.length;x++) {
+      const c = colors[row[x]];
+      if (c) s += `<rect x="${x*sz}" y="${y*sz}" width="${sz}" height="${sz}" fill="${c}"/>`;
+    }
+  });
+  return s+'</svg>';
+}
+
+function chipBag(c1,c2,c3) {
+  const E=dk(c1,70), D=lt(c1,90), M=dk(c1,30), H=lt(c1,50);
+  return px(`
+.....EAAAAE.....
+....EAAAAAE.....
+...EAADDAAAEE...
+..EAADDAAAAAE...
+.EAADDAAABBBAEE.
+EAADDAAABBCBBAE.
+EAADDAABBCCCBBAE
+EAADDAABBCCCBBAE
+EAADDAABBBCBBAAE
+EAADDAAAAABBBAE.
+.EAADDAAAAAAAEE.
+..EAADDAAAAAE...
+...EAADDAAAE....
+....EAAAAAE.....
+.....EAAAE......
+......EEE.......`,{A:c1,B:c2,C:c3,D:D,E:E,M:M,H:H},4);
+}
+function sodaCan(c1,c2,c3) {
+  const S=dk(c1,50), H=lt(c1,80), R=dk(c1,20);
+  return px(`
+....HSSSSSH.....
+...SAAAAAAAAS...
+..SAAAAAAAAAAAS.
+..SHAAAAAAAAHS..
+..SRAAAAAAAAARS.
+..SRABBBBBBBAAS.
+..SRBCCCCCCBBAAS
+..SRBBBBBBBBBAAS
+..SRABBBBBBBAARS
+..SRAAAAAAAAARS.
+..SAAAAAAAAAAAS.
+..SHAAAAAAAAHS..
+...SAAAAAAAAS...
+....SSSSSSSS....`,{A:c1,B:c2,C:c3,S:S,H:H,R:R},4);
+}
+function cookiePack(c1,c2,c3) {
+  const S=dk(c1,50), H=lt(c1,70), M=lt(c1,20);
+  return px(`
+...HAAAAAAAH....
+..SAAAAAAAAS....
+.SAABBBBBBBAAS..
+SAABBBBBBBBBAAS.
+SAABCCCCCCBBAAAS
+SAABCCCCCCBBAAAS
+SAABCDDDCCBBAAAS
+SAABCCCCCCBBAAAS
+SAABCCCCCCBBAAAS
+SAABBBBBBBBBAAAS
+.SAABBBBBBBBAAS.
+..SAAAAAAAAS....
+...HAAAAAAAH....
+....SSSSSSSS....`,{A:c1,B:c2,C:c3,D:lt(c3,60),S:S,H:H,M:M},4);
+}
+function candyBag(c1,c2,c3) {
+  const S=dk(c1,50), H=lt(c1,80), R=dk(c1,25);
+  return px(`
+.....HHAAAAAA...
+....HHAAAAAAA...
+...HHAAAAAAAAA..
+..HHAAAABBBBAA..
+.HHAAAAABBBBBAAS
+HHAAAAABCCCBBAAS
+HHAAAAABCCCBBAAS
+HHAAAAABCDCBBAAS
+HHAAAAABCCCBBAAS
+HHAAAAABBBBBAAAS
+..HHAAAAABBBAA..
+...HHAAAAAAAAS..
+....HHAAAAAAS...
+.....HHAAAAS....
+......HHAAAS....`,{A:c1,B:c2,C:c3,D:lt(c3,80),S:S,H:H,R:R},4);
+}
+function chocoBar(c1,c2,c3) {
+  const S=dk(c1,60), H=lt(c1,60), W=lt(c2,20);
+  return px(`
+................
+.SSSSSSSSSSSS...
+SAAAAAAAAAAASH..
+SAABBBAABBBASH..
+SAABBBAAABBASH..
+SAAAAAAAAAAASH..
+SAABBBAABBBASH..
+SAABBBAAABBASH..
+SAAAAAAAAAAASH..
+SAABBBAAABBASH..
+SAABBBAABBBASH..
+SAAAAAAAAAAASH..
+SSSSSSSSSSSSSH..
+.HHHHHHHHHHHH...
+................`,{A:c1,B:c2,C:c3,S:S,H:H,W:W},4);
+}
+
+function getArt(p) {
+  switch(p.type) {
+    case 'chip':   return chipBag(p.c1,p.c2,p.c3);
+    case 'can':    return sodaCan(p.c1,p.c2,p.c3);
+    case 'cookie': return cookiePack(p.c1,p.c2,p.c3);
+    case 'candy':  return candyBag(p.c1,p.c2,p.c3);
+    case 'bar':    return chocoBar(p.c1,p.c2,p.c3);
+    default:       return candyBag(p.c1,p.c2,p.c3);
+  }
+}
+
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
+const inv = {};
+PRODUCTS.forEach(p => inv[p.id] = p.stock);
+let selLetter = null, selNumber = null, coins = 0;
+
+/* ══════════════════════════════════════════
+   RENDER GRID
+══════════════════════════════════════════ */
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  const ROWS = ['A','B','C','D','E'];
+  const COLS = [1,2,3,4,5];
+
+  ROWS.forEach(row => {
+    const rl = document.createElement('div');
+    rl.className = 'row-lbl';
+    rl.textContent = row;
+    grid.appendChild(rl);
+
+    COLS.forEach(col => {
+      const pid  = `${row}${col}`;
+      const prod = PRODUCTS.find(p => p.id === pid);
+      const stk  = prod ? inv[pid] : -1;
+
+      const el = document.createElement('div');
+      el.className = 'slot' + (!prod ? ' empty' : stk===0 ? ' oos' : '');
+      el.id = `slot-${pid}`;
+
+      if (!prod) {
+        el.innerHTML = `<span class="slot-code">${pid}</span>
+          <div style="height:64px;display:flex;align-items:center;justify-content:center;">
+            <span style="font-size:5px;color:rgba(168,221,216,.1)">空</span>
+          </div>`;
+      } else {
+        const dots = Array.from({length:8},(_,i)=>
+          `<div class="sdot${i>=stk?' empty-dot':''}"></div>`).join('');
+        const stamp = stk===0 ? `<div class="stamp"><div class="stamp-inner">AGOTADO</div></div>` : '';
+        const artDiv = `<div class="${prod.anim}" style="height:64px;display:flex;align-items:center;justify-content:center;">${getArt(prod)}</div>`;
+        el.innerHTML = `${stamp}
+          <span class="slot-code">${pid}</span>
+          ${artDiv}
+          <span class="slot-name">${prod.name}</span>
+          <span class="slot-price">$${prod.price}</span>
+          <div class="stock-row">${dots}</div>`;
+      }
+      grid.appendChild(el);
+    });
+  });
+}
+
+/* ══════════════════════════════════════════
+   RENDER KEYPADS
+══════════════════════════════════════════ */
+function renderKpads() { renderLetters(); renderNumbers(); }
+function renderLetters() {
+  const kl = document.getElementById('kpadL');
+  kl.innerHTML = '';
+  ['A','B','C','D','E'].forEach(L => {
+    const rowProds = PRODUCTS.filter(p=>p.id[0]===L);
+    const allOos   = rowProds.length>0 && rowProds.every(p=>inv[p.id]===0);
+    const btn = document.createElement('button');
+    btn.className = `kbtn kbtn-L${allOos?' oos-btn':''}${selLetter===L?' sel-L':''}`;
+    btn.textContent = L;
+    btn.onclick = () => pressLetter(L);
+    kl.appendChild(btn);
+  });
+}
+function renderNumbers() {
+  const kn = document.getElementById('kpadN');
+  kn.innerHTML = '';
+  [1,2,3,4,5].forEach(N => {
+    const colProds = PRODUCTS.filter(p=>parseInt(p.id[1])===N);
+    const allOos   = colProds.length>0 && colProds.every(p=>inv[p.id]===0);
+    const btn = document.createElement('button');
+    btn.className = `kbtn kbtn-N${allOos?' oos-btn':''}${selNumber===N?' sel-N':''}`;
+    btn.textContent = N;
+    btn.onclick = () => pressNumber(N);
+    kn.appendChild(btn);
+  });
+}
+
+/* ══════════════════════════════════════════
+   INTERACTIONS
+══════════════════════════════════════════ */
+function pressLetter(L) {
+  sndBoton();   // boton.mp3
+  selLetter = L; selNumber = null;
+  clearSlotHighlights();
+  renderKpads();
+  updateDisplay();
+}
+function pressNumber(N) {
+  if (!selLetter) { sndError(); showMsg('⚠ SELECCIONA FILA (A-E) PRIMERO',2500); return; }
+  sndBoton();   // boton.mp3
+  selNumber = N;
+  clearSlotHighlights();
+  const pid = `${selLetter}${selNumber}`;
+  const slot = document.getElementById(`slot-${pid}`);
+  if (slot) slot.classList.add('selected');
+  renderKpads();
+  updateDisplay();
+}
+function clearSlotHighlights() {
+  document.querySelectorAll('.slot.selected').forEach(s=>s.classList.remove('selected'));
+}
+function doClear() {
+  sndBoton();   // boton.mp3
+  selLetter = null; selNumber = null;
+  clearSlotHighlights();
+  renderKpads();
+  updateDisplay(); clearMsg();
+}
+function coin(amt) {
+  sndBoton();   // boton.mp3 — insertar moneda también es un botón
+  coins += amt;
+  updateCoinDisplay();
+}
+function updateCoinDisplay() {
+  document.getElementById('coinAmt').textContent = `$${coins}.00`;
+  const pid = selLetter && selNumber ? `${selLetter}${selNumber}` : null;
+  const prod = pid ? PRODUCTS.find(p=>p.id===pid) : null;
+  if (prod && inv[pid]>0) {
+    const diff = coins - prod.price;
+    const el = document.getElementById('coinChange');
+    if (diff >= 0) {
+      el.textContent = `Cambio: $${diff}`;
+      el.style.color = 'var(--neon-green)';
+    } else {
+      el.textContent = `Faltan: $${Math.abs(diff)}`;
+      el.style.color = 'var(--neon-red)';
+    }
+  } else {
+    document.getElementById('coinChange').textContent = '';
+  }
+}
+function devolverCambio() {
+  if (coins === 0) { sndError(); showMsg('⚠ NO HAY MONEDAS INSERTADAS',2000); return; }
+  sndBoton();   // boton.mp3
+  const ct = document.getElementById('changeTray');
+  ct.textContent = `↩ Devuelto: $${coins}.00 MXN`;
+  ct.classList.add('visible');
+  setTimeout(()=>ct.classList.remove('visible'),4000);
+  coins = 0;
+  updateCoinDisplay();
+}
+function doBuy() {
+  if (!selLetter||!selNumber) { sndError(); showMsg('⚠ SELECCIONA UN PRODUCTO PRIMERO',2500); return; }
+  const pid  = `${selLetter}${selNumber}`;
+  const prod = PRODUCTS.find(p=>p.id===pid);
+  if (!prod)        { sndError(); showMsg('⚠ SLOT VACÍO',2500); return; }
+  if (inv[pid]===0) { sndError(); showMsg('⚠ PRODUCTO AGOTADO / OUT OF STOCK',2500); return; }
+  if (coins < prod.price) {
+    sndError();
+    const need = prod.price - coins;
+    showMsg(`⚠ INSERTA $${need} MÁS`,2500); return;
+  }
+  sndCompra();  // comprar.mp3 — SOLO el botón de comprar
+
+  const change = coins - prod.price;
+  inv[pid]--;
+  coins = 0;
+  updateCoinDisplay();
+
+  const slot = document.getElementById(`slot-${pid}`);
+  if (slot) { slot.classList.add('dispensing'); setTimeout(()=>slot.classList.remove('dispensing'),1200); }
+
+  const tray = document.getElementById('trayContent');
+  tray.className = 'tray-item';
+  tray.innerHTML = `✓ ${prod.name}<br><span style="font-size:4.5px;color:rgba(0,201,110,.5)">¡DISFRUTA!</span>`;
+  setTimeout(()=>{ tray.className='tray-lbl'; tray.innerHTML='[ BANDEJA ]'; },6000);
+
+  if (change > 0) {
+    const ct = document.getElementById('changeTray');
+    ct.textContent = `💰 Cambio: $${change}.00 MXN`;
+    ct.classList.add('visible');
+    setTimeout(()=>ct.classList.remove('visible'),5000);
+  }
+
+  document.getElementById('mProd').textContent = `${prod.name} — $${prod.price} MXN`;
+  document.getElementById('mChange').textContent = change > 0 ? `💰 Cambio: $${change}.00 MXN` : '';
+  document.getElementById('modal').classList.add('on');
+
+  selLetter=null; selNumber=null;
+  renderGrid(); renderKpads(); updateDisplay(); clearMsg();
+}
+function closeModal() {
+  sndBoton();   // boton.mp3
+  document.getElementById('modal').classList.remove('on');
+}
+
+/* ══════════════════════════════════════════
+   DISPLAY
+══════════════════════════════════════════ */
+function updateDisplay() {
+  const codeEl = document.getElementById('dCode');
+  const nameEl = document.getElementById('dName');
+  const prcEl  = document.getElementById('dPrc');
+
+  if (selLetter && selNumber) {
+    const pid  = `${selLetter}${selNumber}`;
+    const prod = PRODUCTS.find(p=>p.id===pid);
+    codeEl.textContent = pid;
+    if (prod) {
+      if (inv[pid]===0) {
+        nameEl.textContent = `${prod.name} — AGOTADO`;
+        prcEl.textContent  = '';
+        nameEl.style.color = 'var(--neon-red)';
+        codeEl.style.color = 'var(--neon-red)';
+        codeEl.style.textShadow = '0 0 14px var(--neon-red)';
+        showMsg('⚠ PRODUCTO AGOTADO',0);
+      } else {
+        nameEl.textContent = prod.name;
+        prcEl.textContent  = `$${prod.price}.00 MXN`;
+        nameEl.style.color = 'var(--neon-green)';
+        codeEl.style.color = 'var(--neon-green)';
+        codeEl.style.textShadow = '0 0 14px var(--neon-green)';
+        clearMsg();
+        updateCoinDisplay();
+      }
+    } else {
+      nameEl.textContent='VACÍO'; prcEl.textContent='';
+      nameEl.style.color='rgba(168,221,216,.4)';
+    }
+  } else if (selLetter) {
+    codeEl.textContent=`${selLetter} _`; nameEl.textContent=''; prcEl.textContent='';
+    codeEl.style.color='var(--neon-green)';
+    codeEl.style.textShadow='0 0 14px var(--neon-green)';
+    nameEl.style.color='var(--neon-green)';
+  } else {
+    codeEl.textContent='_ _'; nameEl.textContent=''; prcEl.textContent='';
+    codeEl.style.color='var(--neon-green)';
+    codeEl.style.textShadow='0 0 14px var(--neon-green)';
+  }
+}
+
+let msgTimer = null;
+function showMsg(txt, dur) {
+  const el = document.getElementById('dMsg');
+  el.textContent = txt;
+  if (msgTimer) clearTimeout(msgTimer);
+  if (dur>0) msgTimer = setTimeout(clearMsg, dur);
+}
+function clearMsg() { document.getElementById('dMsg').textContent=''; }
+
+/* INIT */
+renderGrid();
+renderKpads();
+updateDisplay();
+</script>
+</body>
+</html>
